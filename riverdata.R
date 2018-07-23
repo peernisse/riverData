@@ -1,9 +1,10 @@
 library(httr)
 library(jsonlite)
 library(tidyverse)
+library(lubridate)
 source("helpers.R")
 
-# Import Data by Entrance ID---------------------------------
+# Import Entrance Data by Entrance ID---------------------------------
 
 myList<-list()
 
@@ -25,7 +26,77 @@ entLocs<-do.call(rbind,myList)
 entLocs<-as.data.frame(entLocs) %>% 
   select(12,7,13,8,14,3,2,6)
 
+# Import user permit data by entrance ID---------------------
+#THis service has been deprecated in 2018. Need to figure out how to get past the 1000 record limit
+# hist<-list()
+# 
+# for (i in ids) {
+#   
+#   call2<-paste0(pathEntID,"/",i,"/historicalreservations/","?apikey=",key)
+#   
+#   entHist<-GET(call2, authenticate(usr,pwd, type = "basic"))
+#   
+#   entHist_text<-content(entHist, "text")
+#   
+#   entHist_json<-fromJSON(entHist_text, flatten = TRUE)
+#   
+#   hist[[i]]<-entHist_json
+#   
+# }
+# 
+# rvrHist<-do.call(rbind,hist)
+# rvrHist<-as.data.frame(rvrHist)
 
+
+# Download reservation data and combine CSV files
+#The REST API for these data is depreceated. ZIP files of CSV files were downloaded manually
+# files<-list.files("./data",full.names = TRUE)
+# rvrData<-data.frame()
+# 
+# for (i in files) {
+#   
+#   useData<-read.csv(i,stringsAsFactors = FALSE)
+#   useData$EntityID<-as.character(useData$EntityID)
+#   
+#   dat<-useData %>% 
+#     filter(EntityID %in% ids, EntityType=='Entrance') %>% 
+#     select(Park,EntityID,FacilityID,CustomerState,StartDate)
+#   
+#   rvrData<-rbind(rvrData,dat)
+#   
+# }
+# 
+# 
+# write.csv(rvrData,"./data/rvrData.csv", row.names = FALSE)
+
+
+#Analyze the data-----------------------------------------
+rawData<-read.csv('./data/rvrData.csv',stringsAsFactors = FALSE)
+rvrData<-rawData
+#Clean dates
+newdates<-strptime(rvrData$StartDate,format='%Y-%m-%d')
+rvrData$StartDate<-as.POSIXct(newdates)
+
+#Make variables
+rvrData$Month<-month(rvrData$StartDate,label=TRUE,abbr=FALSE)
+rvrData$Day<-wday(rvrData$StartDate, label = TRUE, abbr = FALSE)
+rvrData$Year<-year(rvrData$StartDate)
+
+#Plots
+g<-ggplot(rvrData,aes(Month))+
+  geom_bar()+
+  facet_wrap(~Park,scales='free')
+g
+
+g<-ggplot(rvrData,aes(Day))+
+  geom_bar()+
+  facet_wrap(~Park,scales='free')
+g
+
+g<-ggplot(rvrData,aes(Day))+
+  geom_bar()+
+  facet_wrap(~Month)
+g
 
 
 

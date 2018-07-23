@@ -9,5 +9,9 @@ key<-"80E50F3D830B46D4BC43DDF5592DE6B6"
 pathEntID<-"https://ridb.recreation.gov/api/v1/permitentrances"
 
 
+
 #Entrance IDs of interest
-ids<-c(376,377,378,379,380,371)
+ids<-c("376","377","378","379","380","371")
+
+facIDs<-c(234624,234623,234622,234625)
+
