@@ -49,7 +49,7 @@ entLocs<-as.data.frame(entLocs) %>%
 
 
 # Download reservation data and combine CSV files
-#The REST API for these data is depreceated. ZIP files of CSV files were downloaded manually
+# The REST API for these data is depreceated. ZIP files of CSV files were downloaded manually
 # files<-list.files("./data",full.names = TRUE)
 # rvrData<-data.frame()
 # 
@@ -68,6 +68,29 @@ entLocs<-as.data.frame(entLocs) %>%
 # 
 # 
 # write.csv(rvrData,"./data/rvrData.csv", row.names = FALSE)
+
+# Import hydrology time series data --------------------------------------------------
+
+hcallMF<-"https://waterservices.usgs.gov/nwis/dv/?format=json&sites=13309220&startDT=2010-01-01&endDT=2018-07-23&statCd=00003&siteStatus=all"
+
+hGet<-GET(hcallMF)
+
+hGet_text<-content(hGet, "text")
+
+hGet_json<-fromJSON(hGet_text, flatten = TRUE)
+
+hGet_json<-hGet_json$value
+
+hGet_json <- lapply(hGet_json, function(x) {
+  x[sapply(x, is.null)] <- NA
+  unlist(x)
+})
+
+
+mfData<-as.data.frame(t(do.call(rbind,hGet_json)))
+
+
+
 
 
 #Analyze the data-----------------------------------------
